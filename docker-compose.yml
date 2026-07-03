@@ -1,0 +1,69 @@
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: blastradius-postgres
+    environment:
+      POSTGRES_DB: audittrail_db
+      POSTGRES_USER: audittrail_user
+      POSTGRES_PASSWORD: Blastradius123!
+    ports:
+      - "5051:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U audittrail_user -d audittrail_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - blastradius-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blastradius-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/audittrail_db
+      SPRING_DATASOURCE_USERNAME: audittrail_user
+      SPRING_DATASOURCE_PASSWORD: Blastradius123!
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 8051
+      SERVER_SERVLET_CONTEXT_PATH: /audittrail
+      SECURITY_JWT_SECRET: BlastradiusSecretKeyForJWTAuthentication2024ProductionSecureKey512BitsLong
+      SECURITY_JWT_EXPIRATION: 86400000
+    ports:
+      - "8051:8051"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qS http://localhost:8051/audittrail/actuator/health 2>&1 | grep -q 'HTTP/'"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - blastradius-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: blastradius-frontend
+    ports:
+      - "8050:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - blastradius-network
+
+volumes:
+  postgres_data:
+
+networks:
+  blastradius-network:
+    driver: bridge

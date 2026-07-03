@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: audittrail_db
+          POSTGRES_USER: audittrail_user
+          POSTGRES_PASSWORD: Blastradius123!
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build with Maven
+      run: mvn clean package -B -q -DskipTests
+
+    - name: Run tests
+      run: mvn test -B -q
+      env:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/audittrail_db
+        SPRING_DATASOURCE_USERNAME: audittrail_user
+        SPRING_DATASOURCE_PASSWORD: Blastradius123!
+
+    - name: Generate coverage report
+      run: mvn jacoco:report -q
+
+    - name: Build backend Docker image
+      run: docker build -t blastradius-backend:${{ github.sha }} .

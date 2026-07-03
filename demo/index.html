@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blastradius — Enterprise Audit Trail System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #312e81 100%); }
+  .card-hover { transition: all .25s ease; }
+  .card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 30px -6px rgba(99,102,241,0.18); }
+  .typing-cursor::after { content: '|'; animation: blink 1s infinite; color: #818cf8; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; letter-spacing: .02em; }
+  .badge-high { background: #fee2e2; color: #991b1b; }
+  .badge-medium { background: #fef3c7; color: #92400e; }
+  .badge-low { background: #d1fae5; color: #065f46; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+  .badge-gray { background: #f1f5f9; color: #475569; }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .row-hover:hover { background: #f8fafc; }
+  .tab-btn.active { background: #312e81; color: #fff; }
+  .tab-btn { background: #e2e8f0; color: #334155; }
+  .step-num { width: 36px; height: 36px; border-radius: 50%; background: #312e81; color: #a5b4fc; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .api-row { font-family: 'Fira Mono', 'Courier New', monospace; font-size: 12px; }
+  @keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .count-animate { animation: countUp 0.6s ease forwards; }
+  .timeline-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .timeline-line { width: 2px; background: #e2e8f0; flex: 1; min-height: 24px; margin-left: 5px; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<!-- Header -->
+<header class="gradient-bg text-white">
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <div class="flex items-center justify-between flex-wrap gap-6">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center">
+          <svg width="30" height="30" viewBox="0 0 60 60">
+            <circle cx="30" cy="30" r="27" fill="none" stroke="#a5b4fc" stroke-width="2" opacity="0.4" />
+            <circle cx="30" cy="30" r="17" fill="none" stroke="#a5b4fc" stroke-width="2.2" opacity="0.7" />
+            <circle cx="30" cy="30" r="5.5" fill="#a5b4fc" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight">Blastradius</h1>
+          <p class="text-slate-300 text-sm mt-0.5">Deployment &amp; Change-Management Audit Trail · <span class="text-indigo-300">Portfolio Project by Rayen Lassoued</span></p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <span class="badge badge-blue">Spring Boot 3.2</span>
+        <span class="badge badge-purple">React 18</span>
+        <span class="badge badge-gray">PostgreSQL</span>
+        <span class="badge badge-low">JWT Auth</span>
+        <span class="badge badge-green">ISO 27001 Ready</span>
+      </div>
+    </div>
+    <!-- Hero metrics -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-10">
+      <div class="bg-white/10 rounded-xl p-4 border border-white/15">
+        <p class="text-3xl font-extrabold text-white" id="cnt-records">0</p>
+        <p class="text-slate-300 text-xs mt-1">Records per chunk</p>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4 border border-white/15">
+        <p class="text-3xl font-extrabold text-indigo-300">&lt;100ms</p>
+        <p class="text-slate-300 text-xs mt-1">Typical API response</p>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4 border border-white/15">
+        <p class="text-3xl font-extrabold text-white" id="cnt-tests">0</p>
+        <p class="text-slate-300 text-xs mt-1">Automated tests (~90% cov)</p>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4 border border-white/15">
+        <p class="text-3xl font-extrabold text-indigo-300">3</p>
+        <p class="text-slate-300 text-xs mt-1">Docker services (cold &lt;60s)</p>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4 border border-white/15">
+        <p class="text-3xl font-extrabold text-white">SOC2</p>
+        <p class="text-slate-300 text-xs mt-1">Evidence export endpoint</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-10 space-y-10">
+
+  <!-- What it does -->
+  <section>
+    <h2 class="text-xl font-bold text-slate-900 mb-2">What This Project Does</h2>
+    <p class="text-slate-600 leading-relaxed max-w-3xl">
+      Blastradius is a full-stack audit log for software deployments and configuration changes. Every
+      deployment to DEV, TEST, STAGING or PRODUCTION is recorded with an automatically assigned risk level,
+      and every configuration/metadata change (created, modified, deleted) is linked back to the deployment
+      that caused it. Releases bundle multiple deployments together — expanding a release shows exactly which
+      deployments are linked to it and the total metadata changes aggregated across them. Teams can bulk-import
+      existing change logs via CSV (chunked ingestion, tolerant of malformed rows, with a persisted upload
+      history), export the full audit log as a compliance CSV straight from the Deployments or Metadata pages,
+      and follow a live dashboard with risk distribution, environment activity, and a chronological recent-activity
+      timeline.
+    </p>
+  </section>
+
+  <!-- How it works -->
+  <section>
+    <h2 class="text-xl font-bold text-slate-900 mb-6">How It Works — 5-Step Flow</h2>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+      <div class="space-y-6">
+        <div class="flex gap-4">
+          <div class="flex flex-col items-center">
+            <div class="step-num">1</div>
+            <div class="timeline-line mt-2"></div>
+          </div>
+          <div class="pb-4">
+            <p class="font-semibold text-slate-800">Developer logs in via JWT</p>
+            <p class="text-sm text-slate-500 mt-1"><code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">POST /api/auth/login</code> — returns a signed JWT. All subsequent calls carry <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">Authorization: Bearer &lt;token&gt;</code>. Roles: <strong>ADMIN</strong>, <strong>DEVELOPER</strong>, <strong>VIEWER</strong>.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex flex-col items-center">
+            <div class="step-num">2</div>
+            <div class="timeline-line mt-2"></div>
+          </div>
+          <div class="pb-4">
+            <p class="font-semibold text-slate-800">Deployment is created — risk assigned automatically</p>
+            <p class="text-sm text-slate-500 mt-1"><code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">POST /api/deployments</code> — the Risk Assessment Engine assigns <span class="badge badge-high mr-1">HIGH</span> for PRODUCTION, <span class="badge badge-medium mr-1">MEDIUM</span> for STAGING, <span class="badge badge-low mr-1">LOW</span> for DEV/TEST. No manual classification needed.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex flex-col items-center">
+            <div class="step-num">3</div>
+            <div class="timeline-line mt-2"></div>
+          </div>
+          <div class="pb-4">
+            <p class="font-semibold text-slate-800">Config/metadata changes are linked to the deployment</p>
+            <p class="text-sm text-slate-500 mt-1"><code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">POST /api/metadata-changes</code> — records what changed (CREATED/MODIFIED/DELETED), which component, old &amp; new values, and who made the change. Linked to the parent deployment by ID.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex flex-col items-center">
+            <div class="step-num">4</div>
+            <div class="timeline-line mt-2"></div>
+          </div>
+          <div class="pb-4">
+            <p class="font-semibold text-slate-800">Dashboard shows live risk summary</p>
+            <p class="text-sm text-slate-500 mt-1"><code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">GET /api/stats</code> — returns aggregate counts by risk level / environment / status and a merged recent-activity timeline of deployments + metadata changes. Powers the React Recharts dashboard.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex flex-col items-center">
+            <div class="step-num">5</div>
+          </div>
+          <div class="pb-0">
+            <p class="font-semibold text-slate-800">Compliance export — one click, audit-ready CSV</p>
+            <p class="text-sm text-slate-500 mt-1"><code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">GET /api/export/deployments.csv</code> — streams RFC 4180 CSV with optional <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">?environment=PRODUCTION&amp;riskLevel=HIGH</code> filters. Attach directly to ISO 27001 / SOC 2 audit packages. Built with Apache Commons CSV.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture diagram -->
+  <section>
+    <h2 class="text-xl font-bold text-slate-900 mb-4">System Architecture</h2>
+    <div class="bg-slate-900 rounded-2xl p-6 overflow-x-auto">
+      <svg viewBox="0 0 760 220" class="w-full max-w-3xl mx-auto">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#6366f1"/>
+          </marker>
+        </defs>
+
+        <!-- React Frontend -->
+        <rect x="20" y="10" width="160" height="76" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="100" y="32" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Inter">Frontend (8050)</text>
+        <text x="100" y="50" text-anchor="middle" fill="#f1f5f9" font-size="12" font-family="Inter" font-weight="600">React 18 + Recharts</text>
+        <text x="100" y="68" text-anchor="middle" fill="#a5b4fc" font-size="9" font-family="Inter">TailwindCSS + NGINX</text>
+        <line x1="180" y1="48" x2="225" y2="48" stroke="#6366f1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="215" y1="60" x2="170" y2="60" stroke="#6366f1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Spring Boot -->
+        <rect x="225" y="10" width="200" height="76" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="325" y="32" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Inter">Backend (8051)</text>
+        <text x="325" y="50" text-anchor="middle" fill="#f1f5f9" font-size="12" font-family="Inter" font-weight="600">Spring Boot REST API</text>
+        <text x="325" y="68" text-anchor="middle" fill="#a5b4fc" font-size="9" font-family="Inter">JWT Auth + Chunked CSV Import</text>
+        <line x1="425" y1="48" x2="470" y2="48" stroke="#6366f1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="470" y1="60" x2="425" y2="60" stroke="#6366f1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Postgres -->
+        <rect x="470" y="20" width="160" height="56" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="550" y="42" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Inter">Database (5051)</text>
+        <text x="550" y="60" text-anchor="middle" fill="#f1f5f9" font-size="12" font-family="Inter" font-weight="600">PostgreSQL 15</text>
+
+        <!-- Bottom row: controllers -->
+        <rect x="20" y="120" width="620" height="90" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="330" y="140" text-anchor="middle" fill="#475569" font-size="10" font-family="Inter" font-weight="700">REST Controllers (/audittrail/api)</text>
+
+        <rect x="35" y="152" width="90" height="44" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+        <text x="80" y="171" text-anchor="middle" fill="#4338ca" font-size="9" font-family="Inter" font-weight="600">Auth / JWT</text>
+        <text x="80" y="185" text-anchor="middle" fill="#6366f1" font-size="8" font-family="Inter">/auth</text>
+
+        <rect x="135" y="152" width="100" height="44" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+        <text x="185" y="171" text-anchor="middle" fill="#4338ca" font-size="9" font-family="Inter" font-weight="600">Deployments</text>
+        <text x="185" y="185" text-anchor="middle" fill="#6366f1" font-size="8" font-family="Inter">/deployments</text>
+
+        <rect x="245" y="152" width="110" height="44" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+        <text x="300" y="171" text-anchor="middle" fill="#4338ca" font-size="9" font-family="Inter" font-weight="600">Metadata Changes</text>
+        <text x="300" y="185" text-anchor="middle" fill="#6366f1" font-size="8" font-family="Inter">/metadata-changes</text>
+
+        <rect x="365" y="152" width="80" height="44" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+        <text x="405" y="171" text-anchor="middle" fill="#4338ca" font-size="9" font-family="Inter" font-weight="600">Releases</text>
+        <text x="405" y="185" text-anchor="middle" fill="#6366f1" font-size="8" font-family="Inter">/releases</text>
+
+        <rect x="455" y="152" width="80" height="44" rx="6" fill="#ecfdf5" stroke="#a7f3d0"/>
+        <text x="495" y="171" text-anchor="middle" fill="#047857" font-size="9" font-family="Inter" font-weight="700">Stats</text>
+        <text x="495" y="185" text-anchor="middle" fill="#047857" font-size="8" font-family="Inter">/stats ✨</text>
+
+        <rect x="545" y="152" width="85" height="44" rx="6" fill="#fef3c7" stroke="#fcd34d"/>
+        <text x="587" y="171" text-anchor="middle" fill="#92400e" font-size="9" font-family="Inter" font-weight="700">Export CSV</text>
+        <text x="587" y="185" text-anchor="middle" fill="#92400e" font-size="8" font-family="Inter">/export ✨</text>
+      </svg>
+      <p class="text-center text-slate-500 text-xs mt-3">✨ = added by Rayen Lassoued (Blastradius enhancements)</p>
+    </div>
+  </section>
+
+  <!-- Live audit log demo -->
+  <section>
+    <h2 class="text-xl font-bold text-slate-900 mb-4">Audit Log — Recent Activity <span class="text-sm font-normal text-slate-500">(live filter demo)</span></h2>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button class="tab-btn active px-4 py-1.5 rounded-full text-xs font-semibold transition" data-filter="ALL">All Events</button>
+        <button class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold transition" data-filter="DEPLOYMENT">Deployments</button>
+        <button class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold transition" data-filter="METADATA_CHANGE">Metadata Changes</button>
+        <button class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold transition" data-filter="HIGH">High Risk Only</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-500 border-b border-slate-100">
+              <th class="py-2 pr-4 font-semibold">Timestamp</th>
+              <th class="py-2 pr-4 font-semibold">Type</th>
+              <th class="py-2 pr-4 font-semibold">Description</th>
+              <th class="py-2 pr-4 font-semibold">Environment / Risk</th>
+              <th class="py-2 pr-4 font-semibold">Actor</th>
+            </tr>
+          </thead>
+          <tbody id="audit-log-body"></tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-400 mt-4">Simulating <code class="bg-slate-100 px-1 rounded">GET /api/stats → recentActivity</code> — actual data from merged deployment + metadata-change timeline.</p>
+    </div>
+  </section>
+
+  <!-- Stats dashboard -->
+  <section>
+    <h2 class="text-xl font-bold text-slate-900 mb-4">Dashboard Summary <code class="text-xs bg-slate-100 px-1.5 py-0.5 rounded">GET /api/stats</code></h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 card-hover">
+        <h3 class="font-semibold text-slate-700 mb-3 text-sm">Deployments by Risk Level</h3>
+        <div class="space-y-3" id="risk-bars"></div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 card-hover">
+        <h3 class="font-semibold text-slate-700 mb-3 text-sm">Deployments by Environment</h3>
+        <div class="space-y-3" id="env-bars"></div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 card-hover">
+        <h3 class="font-semibold text-slate-700 mb-3 text-sm">Metadata Changes by Type</h3>
+        <div class="space-y-3" id="change-bars"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compliance export feature (P4 addition) -->
+  <section>
+    <h2 class="text-xl font-bold text-slate-900 mb-4">Compliance Export — <code class="text-xs bg-slate-100 px-1.5 py-0.5 rounded">GET /api/export/deployments.csv</code></h2>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <p class="text-slate-600 text-sm mb-4">
+        One of Rayen's enhancements: a streaming CSV export endpoint ready to attach as ISO 27001 / SOC 2 change-management evidence. Supports filtering by environment and/or risk level. Uses Apache Commons CSV (already in the project's pom.xml).
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Example API calls</p>
+          <div class="bg-slate-900 rounded-xl p-4 space-y-2 text-xs font-mono text-slate-300">
+            <div><span class="text-emerald-400">GET</span> /api/export/deployments.csv</div>
+            <div class="text-slate-500">→ All deployments as RFC 4180 CSV</div>
+            <div class="mt-3"><span class="text-emerald-400">GET</span> /api/export/deployments.csv?environment=PRODUCTION&amp;riskLevel=HIGH</div>
+            <div class="text-slate-500">→ Only high-risk production deploys</div>
+            <div class="mt-3"><span class="text-emerald-400">GET</span> /api/export/metadata-changes.csv?changeType=DELETED</div>
+            <div class="text-slate-500">→ All deleted-component audit records</div>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Sample CSV output (preview)</p>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-x-auto">
+            <table class="text-xs w-full font-mono">
+              <thead class="text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th class="pr-3 py-1 text-left">ID</th>
+                  <th class="pr-3 py-1 text-left">Name</th>
+                  <th class="pr-3 py-1 text-left">Env</th>
+                  <th class="pr-3 py-1 text-left">Risk</th>
+                  <th class="pr-3 py-1 text-left">Status</th>
+                  <th class="py-1 text-left">Deployed By</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-700">
+                <tr><td class="pr-3 py-0.5">1</td><td class="pr-3">payments-api-v2.4</td><td class="pr-3">PRODUCTION</td><td class="pr-3 font-bold text-red-600">HIGH</td><td class="pr-3">DEPLOYED</td><td>lina.weber</td></tr>
+                <tr><td class="pr-3 py-0.5">2</td><td class="pr-3">auth-service-v1.9</td><td class="pr-3">STAGING</td><td class="pr-3 font-bold text-amber-600">MEDIUM</td><td class="pr-3">DEPLOYED</td><td>tom.becker</td></tr>
+                <tr><td class="pr-3 py-0.5">3</td><td class="pr-3">core-banking-v5.0</td><td class="pr-3">PRODUCTION</td><td class="pr-3 font-bold text-red-600">HIGH</td><td class="pr-3">DEPLOYED</td><td>admin_user</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Response header: <code class="bg-slate-100 px-1 rounded">Content-Disposition: attachment; filename="audittrail-deployments-20260613-094211.csv"</code></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech stack showcase -->
+  <section>
+    <h2 class="text-xl font-bold text-slate-900 mb-4">Tech Stack</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl border border-slate-100 p-4 card-hover">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Backend</p>
+        <ul class="text-sm text-slate-700 space-y-1">
+          <li>Spring Boot 3.2.3</li>
+          <li>Spring Security 6.2</li>
+          <li>Spring Data JPA</li>
+          <li>Java 17</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-100 p-4 card-hover">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Auth &amp; API</p>
+        <ul class="text-sm text-slate-700 space-y-1">
+          <li>JWT (jjwt 0.12)</li>
+          <li>RBAC (3 roles)</li>
+          <li>Springdoc OpenAPI</li>
+          <li>Swagger UI</li>
+          <li>Bean Validation</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-100 p-4 card-hover">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Frontend &amp; Data</p>
+        <ul class="text-sm text-slate-700 space-y-1">
+          <li>React 18</li>
+          <li>Recharts 2.x</li>
+          <li>TailwindCSS</li>
+          <li>PostgreSQL 15</li>
+          <li>Apache Commons CSV</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-100 p-4 card-hover">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Infra &amp; Quality</p>
+        <ul class="text-sm text-slate-700 space-y-1">
+          <li>Docker Compose (3 svc)</li>
+          <li>NGINX reverse proxy</li>
+          <li>Actuator health checks</li>
+          <li>JUnit 5 + Mockito</li>
+          <li>JaCoCo ~90% cov</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key insight typing animation -->
+  <section>
+    <div class="bg-slate-900 rounded-2xl p-6 text-white">
+      <p class="text-indigo-400 text-xs font-semibold uppercase tracking-widest mb-3">Compliance Insight</p>
+      <p id="insight-text" class="text-lg font-medium leading-relaxed typing-cursor"></p>
+    </div>
+  </section>
+
+  <!-- Quick start -->
+  <section>
+    <h2 class="text-xl font-bold text-slate-900 mb-4">Quick Start</h2>
+    <div class="bg-slate-900 rounded-2xl p-6 text-slate-300 font-mono text-sm space-y-2">
+      <div><span class="text-emerald-400">#</span> Clone and start</div>
+      <div>git clone https://github.com/rayenx2/Blastradius.git</div>
+      <div>cd Blastradius &amp;&amp; cp .env.example .env</div>
+      <div>docker compose up -d --build</div>
+      <div class="mt-4 text-slate-500"># Open after ~60s:</div>
+      <div><span class="text-indigo-300">http://localhost:8050</span> <span class="text-slate-500"># React dashboard</span></div>
+      <div><span class="text-indigo-300">http://localhost:8051/audittrail/swagger-ui.html</span> <span class="text-slate-500"># Swagger UI</span></div>
+      <div><span class="text-indigo-300">http://localhost:8051/audittrail/actuator/health</span> <span class="text-slate-500"># Health check</span></div>
+      <div class="mt-2 text-slate-500"># Default: admin_user / AdminPass123!</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="gradient-bg text-white mt-12 py-8">
+  <div class="max-w-6xl mx-auto px-6 text-center">
+    <p class="font-bold text-lg">Rayen Lassoued</p>
+    <p class="text-slate-300 text-sm mt-1">
+      <a href="https://github.com/rayenx2" class="hover:text-indigo-300 underline">github.com/rayenx2</a>
+      &nbsp;|&nbsp;
+      <a href="https://linkedin.com/in/Rayen-Lassoued" class="hover:text-indigo-300 underline">linkedin.com/in/Rayen-Lassoued</a>
+    </p>
+    <p class="text-slate-400 text-xs mt-2">Blastradius — Full-stack deployment &amp; change-management audit trail · Spring Boot 3.2 · React 18 · PostgreSQL</p>
+  </div>
+</footer>
+
+<script>
+// ---- Animated counters ----
+function animateCount(el, target, suffix, duration) {
+  const start = Date.now();
+  function tick() {
+    const elapsed = Date.now() - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const value = Math.floor(progress * target);
+    el.textContent = (value >= 1000 ? value.toLocaleString() : value) + suffix;
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = (target >= 1000 ? target.toLocaleString() : target) + suffix;
+  }
+  requestAnimationFrame(tick);
+}
+window.addEventListener('load', () => {
+  animateCount(document.getElementById('cnt-records'), 40000, '+', 1800);
+  animateCount(document.getElementById('cnt-tests'), 71, '', 1200);
+});
+
+// ---- Pre-computed example data (as if returned by GET /api/stats + /api/deployments) ----
+const auditLog = [
+  { ts: "2026-06-13 09:42:11", type: "DEPLOYMENT", desc: "Deployment 'payments-api-v2.4' to PRODUCTION (DEPLOYED)", env: "PRODUCTION", risk: "HIGH", actor: "lina.weber" },
+  { ts: "2026-06-13 09:40:55", type: "METADATA_CHANGE", desc: "MODIFIED API 'PaymentGatewayConfig'", env: null, risk: null, actor: "lina.weber" },
+  { ts: "2026-06-13 08:15:02", type: "DEPLOYMENT", desc: "Deployment 'auth-service-v1.9' to STAGING (DEPLOYED)", env: "STAGING", risk: "MEDIUM", actor: "tom.becker" },
+  { ts: "2026-06-12 17:03:40", type: "METADATA_CHANGE", desc: "CREATED Service 'FraudDetectionService'", env: null, risk: null, actor: "tom.becker" },
+  { ts: "2026-06-12 14:22:18", type: "DEPLOYMENT", desc: "Deployment 'reporting-dashboard-v3.1' to DEV (PLANNED)", env: "DEV", risk: "LOW", actor: "anna.schmidt" },
+  { ts: "2026-06-12 11:05:09", type: "METADATA_CHANGE", desc: "DELETED Class 'LegacyInvoiceExporter'", env: null, risk: null, actor: "anna.schmidt" },
+  { ts: "2026-06-11 16:48:33", type: "DEPLOYMENT", desc: "Deployment 'core-banking-batch-v5.0' to PRODUCTION (DEPLOYED)", env: "PRODUCTION", risk: "HIGH", actor: "admin_user" },
+  { ts: "2026-06-11 10:11:27", type: "METADATA_CHANGE", desc: "MODIFIED Database 'database_schema'", env: null, risk: null, actor: "admin_user" },
+  { ts: "2026-06-10 15:30:44", type: "DEPLOYMENT", desc: "Deployment 'notification-svc-v1.2' to TEST (DEPLOYED)", env: "TEST", risk: "LOW", actor: "tom.becker" },
+  { ts: "2026-06-10 09:08:19", type: "DEPLOYMENT", desc: "Deployment 'fraud-engine-v3.7' to PRODUCTION (DEPLOYED)", env: "PRODUCTION", risk: "HIGH", actor: "admin_user" },
+];
+
+const riskCounts = { HIGH: 14, MEDIUM: 22, LOW: 31 };
+const envCounts = { PRODUCTION: 14, STAGING: 22, TEST: 18, DEV: 13 };
+const changeCounts = { CREATED: 38, MODIFIED: 52, DELETED: 17 };
+
+const riskColors = { HIGH: 'bg-red-500', MEDIUM: 'bg-amber-500', LOW: 'bg-emerald-500' };
+const envColors = { PRODUCTION: 'bg-red-500', STAGING: 'bg-amber-500', TEST: 'bg-blue-500', DEV: 'bg-emerald-500' };
+const changeColors = { CREATED: 'bg-emerald-500', MODIFIED: 'bg-blue-500', DELETED: 'bg-red-500' };
+
+function renderBars(containerId, counts, colors) {
+  const container = document.getElementById(containerId);
+  const max = Math.max(...Object.values(counts));
+  container.innerHTML = Object.entries(counts).map(([label, value]) => `
+    <div>
+      <div class="flex justify-between text-xs mb-1">
+        <span class="font-medium text-slate-600">${label}</span>
+        <span class="font-bold text-slate-800">${value}</span>
+      </div>
+      <div class="w-full bg-slate-100 rounded-full h-2.5">
+        <div class="${colors[label] || 'bg-indigo-500'} h-2.5 rounded-full" style="width:${(value/max*100).toFixed(0)}%"></div>
+      </div>
+    </div>
+  `).join('');
+}
+renderBars('risk-bars', riskCounts, riskColors);
+renderBars('env-bars', envCounts, envColors);
+renderBars('change-bars', changeCounts, changeColors);
+
+// ---- Audit log table ----
+function riskBadge(risk) {
+  if (!risk) return '<span class="badge badge-gray">—</span>';
+  return `<span class="badge badge-${risk.toLowerCase()}">${risk}</span>`;
+}
+function typeBadge(type) {
+  return type === 'DEPLOYMENT'
+    ? '<span class="badge badge-blue">Deployment</span>'
+    : '<span class="badge badge-purple">Metadata Change</span>';
+}
+function renderLog(filter) {
+  const body = document.getElementById('audit-log-body');
+  const rows = auditLog.filter(e => {
+    if (filter === 'ALL') return true;
+    if (filter === 'HIGH') return e.risk === 'HIGH';
+    return e.type === filter;
+  });
+  if (rows.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-400 text-sm">No events match this filter</td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map(e => `
+    <tr class="border-b border-slate-50 row-hover">
+      <td class="py-2 pr-4 text-slate-500 font-mono text-xs">${e.ts}</td>
+      <td class="py-2 pr-4">${typeBadge(e.type)}</td>
+      <td class="py-2 pr-4 text-slate-700">${e.desc}</td>
+      <td class="py-2 pr-4">${e.env ? `<span class="badge badge-gray mr-1">${e.env}</span>${riskBadge(e.risk)}` : '—'}</td>
+      <td class="py-2 pr-4 text-slate-500">${e.actor}</td>
+    </tr>
+  `).join('');
+}
+renderLog('ALL');
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderLog(btn.dataset.filter);
+  });
+});
+
+// ---- Typing animation ----
+const insight = "A mid-size company running 50+ production deployments per quarter without a centralized audit trail typically fails ISO 27001 / SOC 2 change-management controls during certification audits. Blastradius gives auditors a single queryable log of every deployment, its risk level, every linked configuration change, and who made it — turning a multi-day evidence-gathering exercise into a five-minute filtered CSV export attached directly to the audit package.";
+let i = 0;
+const el = document.getElementById('insight-text');
+function typeNext() {
+  if (i < insight.length) {
+    el.textContent += insight[i++];
+    setTimeout(typeNext, 14);
+  } else {
+    el.classList.remove('typing-cursor');
+  }
+}
+setTimeout(typeNext, 800);
+</script>
+</body>
+</html>
